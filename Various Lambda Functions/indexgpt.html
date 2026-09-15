@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lambda Greeting</title>
+    <script>
+        async function callLambda() {
+            // Get the name from the input field
+            const name = document.getElementById('nameInput').value;
+
+            // API Gateway endpoint
+            const apiEndpoint = 'https://your-api-gateway-url.com'; // Replace with your API Gateway URL
+
+            try {
+                // Make a request to the API Gateway
+                const response = await fetch(`${apiEndpoint}?name=${encodeURIComponent(name)}`);
+                const data = await response.json();
+
+                // Display the response message
+                document.getElementById('response').textContent = data.message;
+            } catch (error) {
+                document.getElementById('response').textContent = 'Error calling the API.';
+                console.error(error);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Lambda Greeting</h1>
+    <p>Enter your name below:</p>
+    <input type="text" id="nameInput" placeholder="Your Name">
+    <button onclick="callLambda()">Submit</button>
+    <p id="response"></p>
+</body>
+</html>

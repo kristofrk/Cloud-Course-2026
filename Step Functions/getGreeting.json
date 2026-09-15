@@ -1,0 +1,15 @@
+{
+  "Comment": "An example using a Task state.",
+  "StartAt": "getGreeting",
+  "Version": "1.0",
+  "TimeoutSeconds": 300,
+  "States": {
+    "getGreeting": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:us-east-1:452756163386:activity:get-greeting",
+      "TimeoutSeconds": 300, 
+      "HeartBeatSeonds": 60,
+      "End": true
+    }
+  }
+}

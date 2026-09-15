@@ -1,0 +1,6 @@
+aws lambda invoke \
+  --region us-east-1 \
+  --function-name myFunction \
+  --cli-binary-format raw-in-base64-out \
+  --payload '{"firstName":"John","lastName":"Doe"}' \
+  response.json

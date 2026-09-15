@@ -1,0 +1,214 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Single EC2 instance WordPress with Amazon Linux 2023, MariaDB, and Apache/PHP in an existing VPC.",
+  "Parameters": {
+    "VpcId": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "VpcId of your existing Virtual Private Cloud (VPC)",
+      "ConstraintDescription": "must be the VPC Id of an existing Virtual Private Cloud."
+    },
+    "SubnetID": {
+      "Type": "AWS::EC2::Subnet::Id",
+      "Description": "A SubnetId in your Virtual Private Cloud (VPC)"
+    },
+    "KeyName": {
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+    },
+    "InstanceType": {
+      "Description": "WebServer EC2 instance type",
+      "Type": "String",
+      "Default": "t3.small"
+    },
+    "SSHLocation": {
+      "Description": "The IP address range that can be used to SSH to the EC2 instances",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "0.0.0.0/0",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+    "DBName": {
+      "Default": "wordpressdb",
+      "Description": "The WordPress database name",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "64",
+      "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
+    },
+    "DBUser": {
+      "Default": "admin",
+      "NoEcho": "true",
+      "Description": "The WordPress database admin account username",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
+    },
+    "DBPassword": {
+      "NoEcho": "true",
+      "Description": "The WordPress database admin account password",
+      "Type": "String",
+      "MinLength": "8",
+      "MaxLength": "41",
+      "AllowedPattern": "[a-zA-Z0-9]*",
+      "ConstraintDescription": "must contain only alphanumeric characters."
+    },
+    "DBRootPassword": {
+      "NoEcho": "true",
+      "Description": "MySQL root password",
+      "Type": "String",
+      "MinLength": "8",
+      "MaxLength": "41",
+      "AllowedPattern": "[a-zA-Z0-9]*",
+      "ConstraintDescription": "must contain only alphanumeric characters."
+    },
+    "LatestAmiId": {
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+      "Default": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64",
+      "Description": "Latest Amazon Linux 2023 AMI ID from SSM Parameter Store"
+    }
+  },
+  "Resources": {
+    "WebServerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Enable HTTP (80) and SSH (22) access",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": {
+              "Ref": "SSHLocation"
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "VpcId"
+        }
+      }
+    },
+    "WebServer": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": {
+          "Ref": "LatestAmiId"
+        },
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": true,
+            "DeviceIndex": "0",
+            "SubnetId": {
+              "Ref": "SubnetID"
+            },
+            "GroupSet": [
+              {
+                "Fn::GetAtt": [
+                  "WebServerSecurityGroup",
+                  "GroupId"
+                ]
+              }
+            ]
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "dnf update -y\n",
+                "dnf install -y httpd mariadb105-server php php-cli php-mysqlnd php-mbstring php-json wget tar\n",
+                "systemctl enable httpd\n",
+                "systemctl enable mariadb\n",
+                "systemctl start mariadb\n",
+                "# Set MySQL root password\n",
+                "mysql -u root <<MYSQL_EOF\n",
+                "ALTER USER 'root'@'localhost' IDENTIFIED BY '",
+                { "Ref": "DBRootPassword" },
+                "';\n",
+                "FLUSH PRIVILEGES;\n",
+                "MYSQL_EOF\n",
+                "# Create DB + user\n",
+                "mysql -u root -p'",
+                { "Ref": "DBRootPassword" },
+                "' <<MYSQL_EOF2\n",
+                "CREATE DATABASE ",
+                { "Ref": "DBName" },
+                ";\n",
+                "CREATE USER '",
+                { "Ref": "DBUser" },
+                "'@'localhost' IDENTIFIED BY '",
+                { "Ref": "DBPassword" },
+                "';\n",
+                "GRANT ALL PRIVILEGES ON ",
+                { "Ref": "DBName" },
+                ".* TO '",
+                { "Ref": "DBUser" },
+                "'@'localhost';\n",
+                "FLUSH PRIVILEGES;\n",
+                "MYSQL_EOF2\n",
+                "# Install WordPress\n",
+                "cd /var/www/html\n",
+                "wget https://wordpress.org/latest.tar.gz\n",
+                "tar -xzf latest.tar.gz\n",
+                "rm -f latest.tar.gz\n",
+                "cd /var/www/html/wordpress\n",
+                "cp wp-config-sample.php wp-config.php\n",
+                "sed -i \"s/database_name_here/",
+                { "Ref": "DBName" },
+                "/\" wp-config.php\n",
+                "sed -i \"s/username_here/",
+                { "Ref": "DBUser" },
+                "/\" wp-config.php\n",
+                "sed -i \"s/password_here/",
+                { "Ref": "DBPassword" },
+                "/\" wp-config.php\n",
+                "chown -R apache:apache /var/www/html\n",
+                "chmod -R 755 /var/www/html\n",
+                "systemctl restart httpd\n"
+              ]
+            ]
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "WebsiteURL": {
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "http://",
+            {
+              "Fn::GetAtt": [
+                "WebServer",
+                "PublicDnsName"
+              ]
+            },
+            "/wordpress"
+          ]
+        ]
+      },
+      "Description": "WordPress Website"
+    }
+  }
+}

@@ -1,0 +1,1955 @@
+{
+  "Outputs": {
+    "AWSEBRDSDatabaseProperties": {
+      "Description": "Properties associated with the RDS database instance",
+      "Value": {
+        "Fn::Join": [
+          ",",
+          [
+            {
+              "Ref": "AWSEBRDSDatabase"
+            },
+            {
+              "Fn::GetAtt": [
+                "AWSEBRDSDatabase",
+                "Endpoint.Address"
+              ]
+            },
+            {
+              "Fn::GetAtt": [
+                "AWSEBRDSDatabase",
+                "Endpoint.Port"
+              ]
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "AWSEBDBPassword": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "The master password for the DB instance.",
+      "ConstraintDescription": "must contain only alphanumeric characters"
+    },
+    "InstanceTypeFamily": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "WebServer EC2 instance type family"
+    },
+    "LogPublicationControl": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "If true customer service logs will be published to S3.",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "ConstraintDescription": "must be Boolean.",
+      "Default": "false"
+    },
+    "DocumentRoot": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Enables you to specify the child directory of your project that is treated as the public-facing web root. If your root document is stored in your project directory, leave this set to \"/\". If your root document is inside a child directory (e.g., <project>/public), set this value to match the child directory. Values should begin with a \"/\" character, and may NOT begin with a \".\" character.",
+      "Default": ""
+    },
+    "InstancePort": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Listen Port",
+      "Default": "80"
+    },
+    "HooksPkgUrl": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Hooks package URL",
+      "Default": "https://elasticbeanstalk-platform-assets-us-east-1.s3.amazonaws.com/stalks/eb_php83_amazon_linux_2023_1.0.755.0_20241004113311/lib/hooks.tar.gz"
+    },
+    "ZlibOutputCompression": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Specifies whether PHP should use compression for output. (This value is written to the php.ini file.)",
+      "Default": "Off"
+    },
+    "AWSEBEnvironmentName": {
+      "NoEcho": "true",
+      "Type": "String"
+    },
+    "AWSEBReferrerId": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Default": ""
+    },
+    "EnvironmentVariables": {
+      "NoEcho": "true",
+      "Type": "CommaDelimitedList",
+      "Description": "Program environment variables.",
+      "Default": ""
+    },
+    "InstanceType": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "WebServer EC2 instance type",
+      "ConstraintDescription": "must be a valid EC2 instance type."
+    },
+    "ProxyStaticFiles": {
+      "NoEcho": "true",
+      "Type": "CommaDelimitedList",
+      "Description": "A mapping from virtual path to physical path.",
+      "Default": ""
+    },
+    "XRayEnabled": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Enables AWS X-Ray for your environment.",
+      "Default": "false"
+    },
+    "DisplayErrors": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Specifies whether error messages should be part of the output. (This value is written to the php.ini file.)",
+      "Default": "Off"
+    },
+    "AWSEBEnvironmentId": {
+      "NoEcho": "true",
+      "Type": "String"
+    },
+    "AppSource": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "The url of the application source.",
+      "Default": "https://elasticbeanstalk-platform-assets-us-east-1.s3.amazonaws.com/stalks/eb_php83_amazon_linux_2023_1.0.755.0_20241004113311/sampleapp/EBSampleApp-PHP.zip"
+    },
+    "MaxExecutionTime": {
+      "NoEcho": "true",
+      "Type": "Number",
+      "Description": "Sets the maximum time, in seconds, a script is allowed to run before it is terminated by the environment. This helps prevent poorly written scripts from tying up the server.",
+      "Default": 60
+    },
+    "ProxyServer": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Application Proxy Server",
+      "Default": "nginx"
+    },
+    "MemoryLimit": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Specifies the amount of memory allocated to the PHP environment. (This value is written to the php.ini file.)",
+      "Default": "256M"
+    },
+    "AWSEBDBName": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "The DB Name of the RDS instance",
+      "ConstraintDescription": "must contain only alphanumeric characters",
+      "Default": "ebdb"
+    },
+    "AWSEBDBUser": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "The name of master user for the client DB Instance.",
+      "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters",
+      "Default": "ebroot"
+    },
+    "AllowUrlFopen": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Specifies whether the PHP's file functions are allowed to retrieve data from remote locations, such as websites or FTP servers. (This value is written to the php.ini file.)",
+      "Default": "On"
+    },
+    "AWSEBAgentId": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Default": ""
+    },
+    "ComposerOptions": {
+      "NoEcho": "true",
+      "Type": "String",
+      "Description": "Sets custom options to use when installing dependencies using Composer through composer.phar install",
+      "Default": ""
+    },
+    "AWSEBEnvironmentBucket": {
+      "NoEcho": "true",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "AWSEBSecurityGroup": {
+      "Properties": {
+        "GroupDescription": "VPC Security Group",
+        "VpcId": "vpc-0cdf90fb7427918a3",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": {
+              "Ref": "InstancePort"
+            },
+            "ToPort": {
+              "Ref": "InstancePort"
+            },
+            "IpProtocol": "tcp"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+    "AWSEBRDSDBSecurityGroup": {
+      "Properties": {
+        "GroupDescription": "RDS DB VPC Security Group",
+        "EC2VpcId": "vpc-0cdf90fb7427918a3",
+        "DBSecurityGroupIngress": [
+          {
+            "EC2SecurityGroupId": {
+              "Ref": "AWSEBSecurityGroup"
+            }
+          }
+        ]
+      },
+      "Type": "AWS::RDS::DBSecurityGroup"
+    },
+    "AWSEBInstanceLaunchWaitHandle": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle"
+    },
+    "AWSEBRDSDatabase": {
+      "Type": "AWS::RDS::DBInstance",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "MasterUserPassword": {
+          "Ref": "AWSEBDBPassword"
+        },
+        "EngineVersion": "8.0.39",
+        "DBInstanceClass": "db.t3.small",
+        "DBSecurityGroups": [
+          {
+            "Ref": "AWSEBRDSDBSecurityGroup"
+          }
+        ],
+        "MasterUsername": {
+          "Ref": "AWSEBDBUser"
+        },
+        "DBName": {
+          "Ref": "AWSEBDBName"
+        },
+        "DBSubnetGroupName": {
+          "Ref": "AWSEBRDSDBSubnetGroup"
+        },
+        "MultiAZ": false,
+        "Engine": "mysql",
+        "AllocatedStorage": "5"
+      }
+    },
+    "AWSEBAutoScalingGroup": {
+      "Metadata": {
+        "ForcingMetadataUpdate": "Changing something in the metadata will force re-compuation",
+        "AWS::CloudFormation::Init": {
+          "Infra-WriteTailLogsConf": {
+            "files": {
+              "/opt/elasticbeanstalk/tasks/taillogs.d/eb-activity.conf": {
+                "mode": "000644",
+                "content": {
+                  "Fn::Join": [
+                    "\n",
+                    [
+                      "/var/log/eb-commandprocessor.log",
+                      "/var/log/eb-activity.log",
+                      ""
+                    ]
+                  ]
+                }
+              },
+              "/opt/elasticbeanstalk/tasks/taillogs.d/eb-version-deployment.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "\n",
+                    [
+                      "/var/log/eb-version-deployment.log",
+                      ""
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          "Infra-WriteBundleLogsConf": {
+            "files": {
+              "/opt/elasticbeanstalk/tasks/bundlelogs.d/eb-system.conf": {
+                "mode": "000644",
+                "content": {
+                  "Fn::Join": [
+                    "\n",
+                    [
+                      "/var/log/eb-cfn-init*",
+                      "/var/log/eb-tools*",
+                      "/var/log/eb-publish-logs*",
+                      "/var/log/eb-commandprocessor*",
+                      "/var/log/eb-activity*",
+                      ""
+                    ]
+                  ]
+                }
+              },
+              "/opt/elasticbeanstalk/tasks/bundlelogs.d/cfn-system.conf": {
+                "mode": "000644",
+                "content": {
+                  "Fn::Join": [
+                    "\n",
+                    [
+                      "/var/log/cfn-hup*",
+                      "/var/log/cfn-init*",
+                      "/var/log/cfn-wire*",
+                      ""
+                    ]
+                  ]
+                }
+              },
+              "/opt/elasticbeanstalk/tasks/bundlelogs.d/eb-version-deployment.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "\n",
+                    [
+                      "/var/log/eb-version-deployment.log",
+                      ""
+                    ]
+                  ]
+                }
+              },
+              "/opt/elasticbeanstalk/tasks/bundlelogs.d/cloud-init-system.conf": {
+                "mode": "000644",
+                "content": {
+                  "Fn::Join": [
+                    "\n",
+                    [
+                      "/var/log/cloud-init*",
+                      ""
+                    ]
+                  ]
+                }
+              },
+              "/opt/elasticbeanstalk/tasks/bundlelogs.d/system.conf": {
+                "mode": "000644",
+                "content": {
+                  "Fn::Join": [
+                    "\n",
+                    [
+                      "/var/log/cron",
+                      "/var/log/messages",
+                      "/var/log/yum.log",
+                      ""
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          "InfoTask-TailLogs": {
+            "commands": {
+              "taillogs": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "tailLogs.py --concatenate --conf-path '/opt/elasticbeanstalk/tasks/taillogs.d/*' --location-prefix ",
+                      {
+                        "Fn::FindInMap": [
+                          "EnvironmentInfoTasks",
+                          "tail",
+                          "LocationPrefix"
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          "InfoTask-BundleLogs": {
+            "commands": {
+              "bundlelogs": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "bundleLogs.py --conf-path '/opt/elasticbeanstalk/tasks/bundlelogs.d/*' --location-prefix ",
+                      {
+                        "Fn::FindInMap": [
+                          "EnvironmentInfoTasks",
+                          "bundle",
+                          "LocationPrefix"
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          "AWSEBCfnHupEndpointOverride": {
+            "files": {
+              "/etc/cfn/endpoints-override.json": {
+                "mode": "000644",
+                "owner": "root",
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "{",
+                      "\n",
+                      "  \"Services\": {",
+                      "\n",
+                      "    \"AmazonS3\": {",
+                      "\n",
+                      "      \"Endpoints\": [",
+                      "\n",
+                      "          { \"Region\": \"us-east-1\", \"Hostname\": \"s3.amazonaws.com\", \"Default\": true },",
+                      "\n",
+                      "          { \"Region\": \"us-east-1\", \"Hostname\": \"s3-external-1.amazonaws.com\" },",
+                      "\n",
+                      "          { \"Region\": \"us-east-1\", \"Hostname\": \"s3-external-2.amazonaws.com\" }",
+                      "\n",
+                      "      ]",
+                      "\n",
+                      "    },",
+                      "\n",
+                      "    \"AmazonSQS\": {",
+                      "\n",
+                      "      \"Endpoints\": [",
+                      "\n",
+                      "      ]",
+                      "\n",
+                      "    }",
+                      "\n",
+                      "  }",
+                      "\n",
+                      "}",
+                      "\n"
+                    ]
+                  ]
+                },
+                "group": "root"
+              }
+            },
+            "commands": {
+              "clearbackupfiles": {
+                "command": "rm -f /etc/cfn/endpoints-override.json.bak*"
+              }
+            }
+          },
+          "AWSEBBaseConfig": {
+            "files": {
+              "/opt/elasticbeanstalk/config/ebenvinfo/resource": {
+                "mode": "000440",
+                "owner": "root",
+                "content": "AWSEBAutoScalingGroup",
+                "group": "root"
+              },
+              "/opt/elasticbeanstalk/config/platformconfig/guid.json": {
+                "mode": "000440",
+                "owner": "root",
+                "source": "https://elasticbeanstalk-platform-assets-us-east-1.s3.amazonaws.com/stalks/eb_php83_amazon_linux_2023_1.0.755.0_20241004113311/configs/guid.json",
+                "group": "root"
+              },
+              "/opt/elasticbeanstalk/config/platformconfig/eventmessages.txt": {
+                "mode": "000440",
+                "owner": "root",
+                "source": "https://elasticbeanstalk-platform-assets-us-east-1.s3.amazonaws.com/stalks/eb_php83_amazon_linux_2023_1.0.755.0_20241004113311/configs/eventmessages.txt",
+                "group": "root"
+              },
+              "/opt/elasticbeanstalk/config/ebenvinfo/envid": {
+                "mode": "000440",
+                "owner": "root",
+                "content": {
+                  "Ref": "AWSEBEnvironmentId"
+                },
+                "group": "root"
+              },
+              "/opt/elasticbeanstalk/config/ebenvinfo/envbucket": {
+                "mode": "000440",
+                "owner": "root",
+                "content": {
+                  "Ref": "AWSEBEnvironmentBucket"
+                },
+                "group": "root"
+              },
+              "/opt/elasticbeanstalk/config/platformconfig/generalconfig.json": {
+                "mode": "000440",
+                "owner": "root",
+                "source": "https://elasticbeanstalk-platform-assets-us-east-1.s3.amazonaws.com/stalks/eb_php83_amazon_linux_2023_1.0.755.0_20241004113311/configs/generalconfig.json",
+                "group": "root"
+              },
+              "/opt/elasticbeanstalk/config/ebenvinfo/launchwaithandle": {
+                "mode": "000440",
+                "owner": "root",
+                "content": {
+                  "Ref": "AWSEBInstanceLaunchWaitHandle"
+                },
+                "group": "root"
+              },
+              "/opt/elasticbeanstalk/config/platformconfig/platformconfig.json": {
+                "mode": "000440",
+                "owner": "root",
+                "source": "https://elasticbeanstalk-platform-assets-us-east-1.s3.amazonaws.com/stalks/eb_php83_amazon_linux_2023_1.0.755.0_20241004113311/configs/platformconfig.json",
+                "group": "root"
+              },
+              "/opt/elasticbeanstalk/config/healthd/healthdendpoint": {
+                "mode": "000440",
+                "owner": "root",
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "{",
+                      "\"healthd_endpoint\":",
+                      "\"",
+                      {
+                        "Fn::FindInMap": [
+                          "AWSEBOptions",
+                          "options",
+                          "AWSEBHealthdEndpoint"
+                        ]
+                      },
+                      "\"",
+                      "}"
+                    ]
+                  ]
+                },
+                "group": "root"
+              },
+              "/opt/elasticbeanstalk/config/healthd/healthdgroupid": {
+                "mode": "000440",
+                "owner": "root",
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "{",
+                      "\"groupId\":",
+                      "\"",
+                      {
+                        "Fn::FindInMap": [
+                          "AWSEBOptions",
+                          "options",
+                          "AWSEBHealthdGroupId"
+                        ]
+                      },
+                      "\"",
+                      "}"
+                    ]
+                  ]
+                },
+                "group": "root"
+              },
+              "/opt/elasticbeanstalk/config/platformassetsurl": {
+                "mode": "000440",
+                "owner": "root",
+                "content": {
+                  "Fn::FindInMap": [
+                    "AWSEBOptions",
+                    "options",
+                    "platformAssetsUrl"
+                  ]
+                },
+                "group": "root"
+              },
+              "/opt/elasticbeanstalk/config/platformconfig/packages.json": {
+                "mode": "000440",
+                "owner": "root",
+                "source": "https://elasticbeanstalk-platform-assets-us-east-1.s3.amazonaws.com/stalks/eb_php83_amazon_linux_2023_1.0.755.0_20241004113311/configs/packages.json",
+                "group": "root"
+              },
+              "/opt/elasticbeanstalk/config/ebenvinfo/region": {
+                "mode": "000440",
+                "owner": "root",
+                "content": {
+                  "Ref": "AWS::Region"
+                },
+                "group": "root"
+              }
+            },
+            "commands": {
+              "clearbackupfiles": {
+                "command": "cd /opt/elasticbeanstalk/config && find . -name \"*.bak\" -type f -delete"
+              }
+            }
+          },
+          "Hook-PreAppDeploy": {
+            "commands": {
+              "hooks": {
+                "command": "echo place holder"
+              }
+            }
+          },
+          "InfoTask-SystemTailLogs": {
+            "commands": {
+              "systemtaillogs": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "tailLogs.py --conf-path '/opt/elasticbeanstalk/tasks/systemtaillogs.d/*' --location-prefix ",
+                      {
+                        "Fn::FindInMap": [
+                          "EnvironmentInfoTasks",
+                          "systemtail",
+                          "LocationPrefix"
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          "Infra-WriteSystemTailLogsConf": {
+            "files": {
+              "/opt/elasticbeanstalk/tasks/systemtaillogs.d/eb-system.conf": {
+                "mode": "000644",
+                "content": {
+                  "Fn::Join": [
+                    "\n",
+                    [
+                      "/var/log/eb-cfn-init.log",
+                      "/var/log/eb-tools.log",
+                      "/var/log/eb-publish-logs.log",
+                      "/var/log/eb-commandprocessor.log",
+                      "/var/log/eb-activity.log",
+                      ""
+                    ]
+                  ]
+                }
+              },
+              "/opt/elasticbeanstalk/tasks/systemtaillogs.d/eb-version-deployment.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "\n",
+                    [
+                      "/var/log/eb-version-deployment.log",
+                      ""
+                    ]
+                  ]
+                }
+              },
+              "/opt/elasticbeanstalk/tasks/systemtaillogs.d/cfn-system.conf": {
+                "mode": "000644",
+                "content": {
+                  "Fn::Join": [
+                    "\n",
+                    [
+                      "/var/log/cfn-hup.log",
+                      "/var/log/cfn-init.log",
+                      ""
+                    ]
+                  ]
+                }
+              },
+              "/opt/elasticbeanstalk/tasks/systemtaillogs.d/system.conf": {
+                "mode": "000644",
+                "content": {
+                  "Fn::Join": [
+                    "\n",
+                    [
+                      "/var/log/cron",
+                      "/var/log/messages",
+                      "/var/log/yum.log",
+                      ""
+                    ]
+                  ]
+                }
+              },
+              "/opt/elasticbeanstalk/tasks/systemtaillogs.d/cloud-init-system.conf": {
+                "mode": "000644",
+                "content": {
+                  "Fn::Join": [
+                    "\n",
+                    [
+                      "/var/log/cloud-init.log",
+                      ""
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          "Infra-PatchInstance": {
+            "files": {
+              "/opt/elasticbeanstalk/bin/patch_instance": {
+                "mode": "000750",
+                "owner": "root",
+                "source": {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::FindInMap": [
+                        "AWSEBOptions",
+                        "options",
+                        "ebpatchscripturl"
+                      ]
+                    }
+                  ]
+                },
+                "group": "root"
+              }
+            },
+            "commands": {
+              "01executepatch": {
+                "command": "/opt/elasticbeanstalk/bin/patch_instance"
+              }
+            }
+          },
+          "Infra-InstallContainerHooksPkg": {
+            "commands": {
+              "01download_container_hooks": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "curl -sS --retry 3 '",
+                      {
+                        "Ref": "HooksPkgUrl"
+                      },
+                      "' -o /tmp/hooks.tar.gz"
+                    ]
+                  ]
+                }
+              },
+              "03cleanup": {
+                "command": "rm -f /tmp/hooks.tar.gz"
+              },
+              "00mkdir": {
+                "command": "mkdir -p /opt/elasticbeanstalk"
+              },
+              "02install_container_hooks": {
+                "command": "tar zxf /tmp/hooks.tar.gz --no-same-owner --no-same-permission -C /opt/elasticbeanstalk"
+              }
+            }
+          },
+          "Infra-WritePublishLogsCron": {
+            "files": {
+              "/etc/cron.d/publishlogs": {
+                "mode": "000644",
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "SHELL=/bin/bash",
+                      "\n",
+                      "PATH=/sbin:/bin:/usr/sbin:/usr/bin",
+                      "\n",
+                      "MAILTO=\"\"",
+                      "\n",
+                      "HOME=/",
+                      "\n",
+                      "10,30,50 * * * * root ",
+                      "publishLogs.py --de-dupe --conf-path '/opt/elasticbeanstalk/tasks/publishlogs.d/*' --location-prefix ",
+                      {
+                        "Fn::FindInMap": [
+                          "EnvironmentInfoTasks",
+                          "publish",
+                          "LocationPrefix"
+                        ]
+                      },
+                      " --num-concurrent 2",
+                      "\n",
+                      "05,25,45 * * * * root ",
+                      "clearStaleLogPublishingRecords.py",
+                      "\n"
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          "prebuild_1_WordPressTest": {
+            "cron": [
+              {
+                "schedule": "*/1 * * * *",
+                "name": "task1",
+                "url": "/scheduled.php"
+              }
+            ],
+            "version": 1
+          },
+          "Infra-WriteApplication1": {
+            "commands": {
+              "01mkdir": {
+                "command": "rm -rf /opt/elasticbeanstalk/deploy/appsource/; mkdir -p /opt/elasticbeanstalk/deploy/appsource/"
+              }
+            }
+          },
+          "configSets": {
+            "Infra-WriteTailLogsConf": [
+              "Infra-WriteTailLogsConf"
+            ],
+            "Infra-WriteBundleLogsConf": [
+              "Infra-WriteBundleLogsConf"
+            ],
+            "InfoTask-TailLogs": [
+              "InfoTask-TailLogs"
+            ],
+            "InfoTask-BundleLogs": [
+              "InfoTask-BundleLogs"
+            ],
+            "_OnInstanceReboot": [
+              "AWSEBBaseConfig"
+            ],
+            "_AppInstall": [
+              "prebuild_0_WordPressTest",
+              "prebuild_1_WordPressTest",
+              "Hook-PreAppDeploy"
+            ],
+            "Infra-EmbeddedPreBuild": [
+              "prebuild_0_WordPressTest",
+              "prebuild_1_WordPressTest"
+            ],
+            "Hook-PreAppDeploy": [
+              "Hook-PreAppDeploy"
+            ],
+            "InfoTask-SystemTailLogs": [
+              "InfoTask-SystemTailLogs"
+            ],
+            "Infra-WriteSystemTailLogsConf": [
+              "Infra-WriteSystemTailLogsConf"
+            ],
+            "_OnInstanceBoot": [
+              "AWSEBBaseConfig",
+              "AWSEBCfnHupEndpointOverride"
+            ],
+            "Infra-EmbeddedPostBuild": [],
+            "Infra-WritePublishLogsCron": [
+              "Infra-WritePublishLogsCron"
+            ],
+            "Infra-WriteApplication1": [
+              "Infra-WriteApplication1"
+            ],
+            "Infra-WriteApplication2": [
+              "Infra-WriteApplication2"
+            ],
+            "Infra-WritePublishLogsConf": [
+              "Infra-WritePublishLogsConf"
+            ],
+            "_Infra-PatchInstance": [
+              "Infra-PatchInstance"
+            ]
+          },
+          "Infra-WriteApplication2": {
+            "files": {
+              "/opt/elasticbeanstalk/bin/download_source_bundle": {
+                "owner": "root",
+                "mode": "000750",
+                "source": {
+                  "Fn::Select": [
+                    0,
+                    {
+                      "Fn::FindInMap": [
+                        "AWSEBOptions",
+                        "options",
+                        "downloadSourceBundleScriptLocation"
+                      ]
+                    }
+                  ]
+                },
+                "group": "root"
+              }
+            },
+            "commands": {
+              "01downloadVersion": {
+                "command": "/opt/elasticbeanstalk/bin/download_source_bundle"
+              },
+              "02deleteVersionDownloadScriptFile": {
+                "command": "rm /opt/elasticbeanstalk/bin/download_source_bundle"
+              }
+            }
+          },
+          "prebuild_0_WordPressTest": {
+            "files": {
+              "/opt/elasticbeanstalk/tasks/taillogs.d/01-sample-app.conf": {
+                "content": "/tmp/sample-app.log\n"
+              },
+              "/opt/elasticbeanstalk/tasks/bundlelogs.d/01-sample-app.conf": {
+                "content": "/tmp/sample-app*\n"
+              }
+            }
+          },
+          "Infra-WritePublishLogsConf": {
+            "files": {}
+          }
+        },
+        "AWS::ElasticBeanstalk::Ext": {
+          "_AppSourceUrlFileContent": {
+            "url": {
+              "Ref": "AppSource"
+            }
+          },
+          "_TriggersConfig": {
+            "configDeploy": {
+              "_Command": "CMD-ConfigDeploy",
+              "_WatchGroups": [
+                "_TriggerConfigDeployment"
+              ]
+            },
+            "applicationDeploy": {
+              "_Command": "CMD-AppDeploy",
+              "_WatchGroups": [
+                "_TriggerAppDeployment"
+              ]
+            }
+          },
+          "_ParameterTriggers": {
+            "_TriggerConfigDeployment": [
+              "EnvironmentVariables",
+              "InstancePort",
+              "LogPublicationControl",
+              "XRayEnabled",
+              "DocumentRoot",
+              "MemoryLimit",
+              "ZlibOutputCompression",
+              "AllowUrlFopen",
+              "DisplayErrors",
+              "MaxExecutionTime",
+              "ComposerOptions",
+              "ProxyStaticFiles",
+              "ProxyServer",
+              "AWSEBDBUser",
+              "AWSEBDBPassword",
+              "AWSEBDBName"
+            ],
+            "_TriggerAppDeployment": [
+              "AppSource"
+            ]
+          },
+          "_ContainerConfigFileContent": {
+            "container": {
+              "supported_proxy_servers": [
+                "apache",
+                "nginx"
+              ],
+              "static_files": {
+                "Ref": "ProxyStaticFiles"
+              },
+              "proxy_server": {
+                "Ref": "ProxyServer"
+              },
+              "log_group_name_prefix": "/aws/elasticbeanstalk",
+              "instance_port": {
+                "Ref": "InstancePort"
+              },
+              "xray_enabled": {
+                "Ref": "XRayEnabled"
+              },
+              "default_log_list": [
+                "/var/log/nginx/access.log",
+                "/var/log/nginx/error.log",
+                "/var/log/httpd/access_log",
+                "/var/log/httpd/error_log"
+              ],
+              "common_log_list": [
+                "/var/log/eb-engine.log",
+                "/var/log/eb-hooks.log"
+              ],
+              "environment_name": {
+                "Ref": "AWSEBEnvironmentName"
+              }
+            },
+            "optionsettings": {
+              "aws:elasticbeanstalk:container:php:phpini": {
+                "display_errors": {
+                  "Ref": "DisplayErrors"
+                },
+                "document_root": {
+                  "Ref": "DocumentRoot"
+                },
+                "composer_options": {
+                  "Ref": "ComposerOptions"
+                },
+                "allow_url_fopen": {
+                  "Ref": "AllowUrlFopen"
+                },
+                "zlib_output_compression": {
+                  "Ref": "ZlibOutputCompression"
+                },
+                "memory_limit": {
+                  "Ref": "MemoryLimit"
+                },
+                "max_execution_time": {
+                  "Ref": "MaxExecutionTime"
+                }
+              },
+              "aws:elasticbeanstalk:application:environment": {
+                "Ref": "EnvironmentVariables"
+              },
+              "aws:elasticbeanstalk:hostmanager": {
+                "LogPublicationControl": {
+                  "Ref": "LogPublicationControl"
+                }
+              },
+              "aws:elasticbeanstalk:environment:proxy": {
+                "StaticFiles": {
+                  "Ref": "ProxyStaticFiles"
+                }
+              },
+              "aws:elasticbeanstalk:healthreporting:system": {
+                "SystemType": "enhanced"
+              }
+            },
+            "system": {
+              "LogPublicationControl": {
+                "Ref": "LogPublicationControl"
+              },
+              "AWSEBAgentId": {
+                "Ref": "AWSEBAgentId"
+              },
+              "AWSEBReferrerId": {
+                "Ref": "AWSEBReferrerId"
+              }
+            },
+            "plugins": {
+              "rds": {
+                "Description": "RDS Environment variables",
+                "env": {
+                  "RDS_PASSWORD": {
+                    "Ref": "AWSEBDBPassword"
+                  },
+                  "RDS_HOSTNAME": {
+                    "Fn::GetAtt": [
+                      "AWSEBRDSDatabase",
+                      "Endpoint.Address"
+                    ]
+                  },
+                  "RDS_PORT": {
+                    "Fn::GetAtt": [
+                      "AWSEBRDSDatabase",
+                      "Endpoint.Port"
+                    ]
+                  },
+                  "RDS_DB_NAME": {
+                    "Ref": "AWSEBDBName"
+                  },
+                  "RDS_USERNAME": {
+                    "Ref": "AWSEBDBUser"
+                  }
+                }
+              }
+            },
+            "commands": {
+              "CMD-TailLogs": {
+                "persistent_configuration": true,
+                "stages": [
+                  {
+                    "name": "TailLogs",
+                    "actions": [
+                      {
+                        "name": "TailLogs",
+                        "type": "sh",
+                        "value": "tailLogs.py --concatenate --conf-path '/opt/elasticbeanstalk/tasks/taillogs.d/*' --location-prefix 'resources/environments/logs/tail/'"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "CMD-PreInit": {
+                "refresh_manifest": true,
+                "stages": [
+                  {
+                    "name": "PreInitStage0",
+                    "actions": [
+                      {
+                        "name": "DownloadSourceBundle",
+                        "type": "infra",
+                        "value": "/opt/elasticbeanstalk/bin/download-source-bundle"
+                      },
+                      {
+                        "name": "PreInitHook",
+                        "type": "hook",
+                        "value": "preinit"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "CMD-Startup": {
+                "stages": [
+                  {
+                    "name": "StartupStage0",
+                    "actions": [
+                      {
+                        "name": "HealthdLogRotation",
+                        "type": "infra",
+                        "value": "infra-healthd_log_rotation.rb"
+                      },
+                      {
+                        "name": "HealthdHTTPDLogging",
+                        "type": "infra",
+                        "value": "infra-healthd_httpd_logging.rb"
+                      },
+                      {
+                        "name": "HealthdNginxLogging",
+                        "type": "infra",
+                        "value": "infra-healthd_nginx_logging.rb"
+                      },
+                      {
+                        "name": "EbExtensionPreBuild",
+                        "type": "infra",
+                        "value": "infra-embedded_prebuild.rb"
+                      },
+                      {
+                        "name": "AppDeployPreHook",
+                        "type": "hook",
+                        "value": "appdeploy/pre"
+                      },
+                      {
+                        "name": "EbExtensionPostBuild",
+                        "type": "infra",
+                        "value": "infra-embedded_postbuild.rb"
+                      },
+                      {
+                        "name": "InfraCleanEbExtension",
+                        "type": "infra",
+                        "value": "infra-clean_ebextensions_dir.rb"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "StartupStage1",
+                    "actions": [
+                      {
+                        "name": "AppDeployEnactHook",
+                        "type": "hook",
+                        "value": "appdeploy/enact"
+                      },
+                      {
+                        "name": "AppDeployPostHook",
+                        "type": "hook",
+                        "value": "appdeploy/post"
+                      },
+                      {
+                        "name": "PostInitHook",
+                        "type": "hook",
+                        "value": "postinit"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "CMD-PublishLogs": {
+                "persistent_configuration": true,
+                "stages": [
+                  {
+                    "name": "PublishLogs",
+                    "actions": [
+                      {
+                        "name": "PublishLogs",
+                        "type": "sh",
+                        "value": "publishLogs.py --de-dupe --conf-path '/opt/elasticbeanstalk/tasks/publishlogs.d/*' --location-prefix 'resources/environments/logs/publish/' --num-concurrent 2"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "CMD-ImmutableDeploymentFlip": {
+                "persistent_configuration": true,
+                "stages": [
+                  {
+                    "name": "ImmutableDeploymentFlip",
+                    "actions": [
+                      {
+                        "name": "FlipCommandRegistration",
+                        "type": "infra",
+                        "value": "infra-reregister-cfn-hup.rb"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "CMD-AppDeploy": {
+                "refresh_manifest": true,
+                "stages": [
+                  {
+                    "name": "AppDeployStage0",
+                    "actions": [
+                      {
+                        "name": "DownloadSourceBundle",
+                        "type": "infra",
+                        "value": "/opt/elasticbeanstalk/bin/download-source-bundle"
+                      },
+                      {
+                        "name": "EbExtensionPreBuild",
+                        "type": "infra",
+                        "value": "infra-embedded_prebuild.rb"
+                      },
+                      {
+                        "name": "AppDeployPreHook",
+                        "type": "hook",
+                        "value": "appdeploy/pre"
+                      },
+                      {
+                        "name": "EbExtensionPostBuild",
+                        "type": "infra",
+                        "value": "infra-embedded_postbuild.rb"
+                      },
+                      {
+                        "name": "InfraCleanEbextension",
+                        "type": "infra",
+                        "value": "infra-clean_ebextensions_dir.rb"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "AppDeployStage1",
+                    "actions": [
+                      {
+                        "name": "AppDeployEnactHook",
+                        "type": "hook",
+                        "value": "appdeploy/enact"
+                      },
+                      {
+                        "name": "AppDeployPostHook",
+                        "type": "hook",
+                        "value": "appdeploy/post"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "CMD-BundleLogs": {
+                "persistent_configuration": true,
+                "stages": [
+                  {
+                    "name": "BundleLogs",
+                    "actions": [
+                      {
+                        "name": "BundleLogs",
+                        "type": "sh",
+                        "value": "bundleLogs.py --conf-path '/opt/elasticbeanstalk/tasks/bundlelogs.d/*' --location-prefix 'resources/environments/logs/bundle/'"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "CMD-SelfStartup": {
+                "stages": [
+                  {
+                    "name": "StartupStage0",
+                    "actions": [
+                      {
+                        "name": "HealthdLogRotation",
+                        "type": "infra",
+                        "value": "infra-healthd_log_rotation.rb"
+                      },
+                      {
+                        "name": "HealthdHTTPDLogging",
+                        "type": "infra",
+                        "value": "infra-healthd_httpd_logging.rb"
+                      },
+                      {
+                        "name": "HealthdNginxLogging",
+                        "type": "infra",
+                        "value": "infra-healthd_nginx_logging.rb"
+                      },
+                      {
+                        "name": "EbExtensionPreBuild",
+                        "type": "infra",
+                        "value": "infra-embedded_prebuild.rb"
+                      },
+                      {
+                        "name": "AppDeployPreHook",
+                        "type": "hook",
+                        "value": "appdeploy/pre"
+                      },
+                      {
+                        "name": "EbExtensionPostBuild",
+                        "type": "infra",
+                        "value": "infra-embedded_postbuild.rb"
+                      },
+                      {
+                        "name": "InfraCleanEbextension",
+                        "type": "infra",
+                        "value": "infra-clean_ebextensions_dir.rb"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "StartupStage1",
+                    "actions": [
+                      {
+                        "name": "AppDeployEnactHook",
+                        "type": "hook",
+                        "value": "appdeploy/enact"
+                      },
+                      {
+                        "name": "AppDeployPostHook",
+                        "type": "hook",
+                        "value": "appdeploy/post"
+                      },
+                      {
+                        "name": "PostInitHook",
+                        "type": "hook",
+                        "value": "postinit"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "CMD-SystemTailLogs": {
+                "persistent_configuration": true,
+                "stages": [
+                  {
+                    "name": "SystemTailLogs",
+                    "actions": [
+                      {
+                        "name": "SystemTailLogs",
+                        "type": "sh",
+                        "value": "tailLogs.py --concatenate --conf-path '/opt/elasticbeanstalk/tasks/systemtaillogs.d/*' --location-prefix 'resources/environments/logs/systemtail/'"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "CMD-RestartAppServer": {
+                "stages": [
+                  {
+                    "name": "RestartAppServerStage0",
+                    "actions": [
+                      {
+                        "name": "RestartAppServerPreHook",
+                        "type": "hook",
+                        "value": "restartappserver/pre"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "RestartAppServerStage1",
+                    "actions": [
+                      {
+                        "name": "RestartAppServerEnactHook",
+                        "type": "hook",
+                        "value": "restartappserver/enact"
+                      },
+                      {
+                        "name": "RestartAppServerPostHook",
+                        "type": "hook",
+                        "value": "restartappserver/post"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "CMD-ConfigDeploy": {
+                "refresh_manifest": true,
+                "stages": [
+                  {
+                    "name": "ConfigDeployStage0",
+                    "actions": [
+                      {
+                        "name": "ConfigDeployPreHook",
+                        "type": "hook",
+                        "value": "configdeploy/pre"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "ConfigDeployStage1",
+                    "actions": [
+                      {
+                        "name": "ConfigDeployEnactHook",
+                        "type": "hook",
+                        "value": "configdeploy/enact"
+                      },
+                      {
+                        "name": "ConfigDeployPostHook",
+                        "type": "hook",
+                        "value": "configdeploy/post"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "_LaunchS3URL": "https://elasticbeanstalk-us-east-1.s3.amazonaws.com/environments/904fa78e-5872-4bec-8cba-7625ad87aa85/launch_control?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEBwaCXVzLWVhc3QtMSJHMEUCIQDalBMJhbjz7ba%2FbsNJT70Rv5dKAoX%2Bt%2FLujxelR7EiyQIgSGZIdK6CIfwVt43h%2BdmkUTHibNyQwpQNfOsDy1tk6T4q9AIIlf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARAAGgwyNTcxNzIzOTExNDkiDOMFow6X9sEpSNa01irIAoWTA4qeW17OCI3Fn7u2p2rb3wKUXXGTcKCNhKsUgMY3FQIc7XNY6sOnP5SuoItVOQsJ5LWVl3NpcKSalh7ZuNZYE38qNYoANRpUUz3S497WE5g6k%2FRTyxuTnxF2qYsrfSLiPgfuRUyE69LyWZDnwoPzteIPYDwA5%2B2pr8SqdEwyQBxdqVfIJ%2F%2BB%2FAugT5IciiCeVDHyT4L1aX0Sq80c8UNKCnYK3BVADiQnkk%2BGCKOxVAlJv2s1tdd3DmWTwSrccixqZ7zTmc0FTxD08uuI%2Fw1mRzCa31v5q%2Fc%2BIPCSFxbRVw7Pp3ldtsM%2FCvTNIKRec9HpTvFKvrcwOEP%2F2Fx1GXwy9uDkdAcJvnyS3dhzXnvaPrOv673NBhu%2BBsOVOlL7lKeLRAw7MaOQEgYvKuEqUhJ%2F89VPv2MTrw0RHvbFUD98bPPGMOvdfSYwmrKPuQY6vwHuTukqfcJ1pugcWr60GNp5BuVZK%2B9YNcCNWGFfqIpC1s4ya9709XGuM8beUrGJK3%2FqNCGCYtq%2FY7%2BC752nml%2B%2FKfQVuCkZT8kWNsQJxj56Idm1mU%2FVSK1xaKTtXvth76zusOI1cMgvz4WjnaOLg7lopckKdyayT5v%2FiX738afMxg3d1PWAYfp%2Bk1iAM0FYyKE9n8UXrH6Zbeo7dd1afuyOdEL2Jjee9c2lnNt1PSpxppxSn9kCgMasIW7m7pYw8Q%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20241031T192502Z&X-Amz-SignedHeaders=host&X-Amz-Expires=43200&X-Amz-Credential=ASIATXYFLITWQUXC73KI%2F20241031%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=4415bd1c953b8cd42d57e8b17e423a2361dd6c39ac579fe987d49d96233d11c2",
+          "_EBExtensionFilePaths": {
+            "prebuild_1_WordPressTest": "cron.yaml",
+            "prebuild_0_WordPressTest": ".ebextensions/logging.config"
+          },
+          "_API": {
+            "_Commands": {
+              "CMD-TailLogs": {
+                "_Stages": {
+                  "01_enact": [
+                    "InfoTask-TailLogs"
+                  ]
+                }
+              },
+              "CMD-Startup": {
+                "_RunStaged": "true",
+                "_Stages": {
+                  "01_pre": [],
+                  "02_enact": []
+                }
+              },
+              "CMD-AppDeploy": {
+                "_RunStaged": "true",
+                "_Stages": {
+                  "01_pre": [],
+                  "02_enact": []
+                }
+              },
+              "CMD-BundleLogs": {
+                "_Stages": {
+                  "01_enact": [
+                    "InfoTask-BundleLogs"
+                  ]
+                }
+              },
+              "CMD-SystemTailLogs": {
+                "_Stages": {
+                  "01_enact": [
+                    "InfoTask-SystemTailLogs"
+                  ]
+                }
+              },
+              "CMD-PatchInstance": {
+                "_Stages": {
+                  "01_enact": [
+                    "_Infra-PatchInstance"
+                  ]
+                }
+              },
+              "CMD-RestartAppServer": {
+                "_RunStaged": "false",
+                "_Stages": {
+                  "01_enact": [],
+                  "02_enact": []
+                }
+              },
+              "CMD-ConfigDeploy": {
+                "_RunStaged": "true",
+                "_Stages": {
+                  "01_pre": [],
+                  "02_enact": []
+                }
+              }
+            }
+          },
+          "AvailabilityZoneCount": "Any",
+          "InstanceSignalURL": {
+            "Ref": "AWSEBInstanceLaunchWaitHandle"
+          },
+          "_EnvironmentInfoTaskMapping": "EnvironmentInfoTasks"
+        }
+      },
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "DependsOn": "AWSEBBeanstalkMetadata",
+      "Properties": {
+        "MinSize": 1,
+        "LaunchConfigurationName": {
+          "Ref": "AWSEBAutoScalingLaunchConfiguration"
+        },
+        "CapacityRebalance": false,
+        "AvailabilityZones": [
+          "us-east-1a",
+          "us-east-1b"
+        ],
+        "Cooldown": "360",
+        "VPCZoneIdentifier": [
+          "subnet-0cf93ccd4198c5b4e",
+          "subnet-00031629ba1b6fc03"
+        ],
+        "MaxSize": 1,
+        "Tags": [
+          {
+            "Value": {
+              "Ref": "AWSEBEnvironmentName"
+            },
+            "Key": "elasticbeanstalk:environment-name",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Value": {
+              "Ref": "AWSEBEnvironmentName"
+            },
+            "Key": "Name",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Value": {
+              "Ref": "AWSEBEnvironmentId"
+            },
+            "Key": "elasticbeanstalk:environment-id",
+            "PropagateAtLaunch": true
+          }
+        ]
+      }
+    },
+    "AWSEBSecurityGroupSSHIngress": {
+      "Properties": {
+        "CidrIp": "0.0.0.0/0",
+        "FromPort": "22",
+        "ToPort": "22",
+        "IpProtocol": "tcp",
+        "GroupId": {
+          "Ref": "AWSEBSecurityGroup"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress"
+    },
+    "AWSEBInstanceLaunchWaitCondition": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "DependsOn": "AWSEBAutoScalingGroup",
+      "Properties": {
+        "Timeout": "900",
+        "Count": 1,
+        "Handle": {
+          "Ref": "AWSEBInstanceLaunchWaitHandle"
+        }
+      }
+    },
+    "AWSEBAutoScalingLaunchConfiguration": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "KeyName": "vockey",
+        "SecurityGroups": [
+          "sg-01818db7786b11a3b",
+          "sg-0854ebe9bb2574a38",
+          "sg-0b44596547695862a",
+          {
+            "Ref": "AWSEBSecurityGroup"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "Content-Type: multipart/mixed; boundary=\"===============5189065377222898407==\"",
+                "\n",
+                "MIME-Version: 1.0",
+                "\n",
+                "",
+                "\n",
+                "--===============5189065377222898407==",
+                "\n",
+                "Content-Type: text/cloud-config; charset=\"us-ascii\"",
+                "\n",
+                "MIME-Version: 1.0",
+                "\n",
+                "Content-Transfer-Encoding: 7bit",
+                "\n",
+                "Content-Disposition: attachment; filename=\"cloud-config.txt\"",
+                "\n",
+                "",
+                "\n",
+                "#cloud-config",
+                "\n",
+                "repo_upgrade: none",
+                "\n",
+                "repo_releasever: ",
+                {
+                  "Fn::FindInMap": [
+                    "ContainerMeta",
+                    "AMIMeta",
+                    "RepoReleaseVersion"
+                  ]
+                },
+                "\n",
+                {
+                  "Fn::FindInMap": [
+                    "AWSEBOptions",
+                    "options",
+                    "CloudConfigOptions"
+                  ]
+                },
+                "\n",
+                "",
+                "\n",
+                "--===============5189065377222898407==",
+                "\n",
+                "Content-Type: text/x-shellscript; charset=\"us-ascii\"",
+                "\n",
+                "MIME-Version: 1.0",
+                "\n",
+                "Content-Transfer-Encoding: 7bit",
+                "\n",
+                "Content-Disposition: attachment; filename=\"user-data.txt\"",
+                "\n\n",
+                "#!/bin/bash",
+                "\n",
+                "exec > >(tee -a /var/log/eb-cfn-init.log|logger -t [eb-cfn-init] -s 2>/dev/console) 2>&1",
+                "\n",
+                "echo [`date -u +\"%Y-%m-%dT%H:%M:%SZ\"`] Started EB User Data",
+                "\n",
+                "set -x",
+                "\n",
+                "\n\n",
+                "function sleep_delay ",
+                "\n",
+                "{",
+                "\n",
+                "  if (( $SLEEP_TIME < $SLEEP_TIME_MAX )); then ",
+                "\n",
+                "    echo Sleeping $SLEEP_TIME",
+                "\n",
+                "    sleep $SLEEP_TIME  ",
+                "\n",
+                "    SLEEP_TIME=$(($SLEEP_TIME * 2)) ",
+                "\n",
+                "  else ",
+                "\n",
+                "    echo Sleeping $SLEEP_TIME_MAX  ",
+                "\n",
+                "    sleep $SLEEP_TIME_MAX  ",
+                "\n",
+                "  fi",
+                "\n",
+                "}",
+                "\n\n",
+                "# Executing bootstrap script",
+                "\n",
+                "SLEEP_TIME=2",
+                "\n",
+                "SLEEP_TIME_MAX=3600",
+                "\n",
+                "while true; do ",
+                "\n",
+                "  curl ",
+                {
+                  "Fn::FindInMap": [
+                    "AWSEBOptions",
+                    "options",
+                    "UserDataScript"
+                  ]
+                },
+                " > /tmp/ebbootstrap.sh ",
+                "\n",
+                "  RESULT=$?",
+                "\n",
+                "  if [[ \"$RESULT\" -ne 0 ]]; then ",
+                "\n",
+                "    sleep_delay ",
+                "\n",
+                "  else",
+                "\n",
+                "    /bin/bash /tmp/ebbootstrap.sh ",
+                "    '",
+                {
+                  "Ref": "AWSEBInstanceLaunchWaitHandle"
+                },
+                "'",
+                "    '",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                "'",
+                "    '",
+                {
+                  "Fn::FindInMap": [
+                    "AWSEBOptions",
+                    "options",
+                    "AWSEBHealthdGroupId"
+                  ]
+                },
+                "'",
+                "    '",
+                {
+                  "Fn::FindInMap": [
+                    "AWSEBOptions",
+                    "options",
+                    "AWSEBHealthdEndpoint"
+                  ]
+                },
+                "'",
+                "    '",
+                {
+                  "Fn::FindInMap": [
+                    "AWSEBOptions",
+                    "options",
+                    "HealthdProxyLogLocation"
+                  ]
+                },
+                "'",
+                "    '",
+                {
+                  "Fn::FindInMap": [
+                    "AWSEBOptions",
+                    "options",
+                    "platformAssetsUrl"
+                  ]
+                },
+                "'",
+                "    '",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "'",
+                "\n",
+                "    RESULT=$?",
+                "\n",
+                "    if [[ \"$RESULT\" -ne 0 ]]; then ",
+                "\n",
+                "      sleep_delay ",
+                "\n",
+                "    else ",
+                "\n",
+                "      exit 0  ",
+                "\n",
+                "    fi ",
+                "\n",
+                "  fi ",
+                "\n",
+                "done",
+                "\n\n",
+                "--===============5189065377222898407==-- "
+              ]
+            ]
+          }
+        },
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSEBAWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            "hvm"
+          ]
+        },
+        "BlockDeviceMappings": [
+          {
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": "10"
+            },
+            "DeviceName": "/dev/xvda"
+          }
+        ],
+        "IamInstanceProfile": "LabInstanceProfile",
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "AssociatePublicIpAddress": false,
+        "InstanceMonitoring": false
+      }
+    },
+    "AWSEBRDSDBSubnetGroup": {
+      "Properties": {
+        "DBSubnetGroupDescription": "RDS DB Subnet Group",
+        "SubnetIds": [
+          "subnet-0d0ef77288eb97ca1",
+          "subnet-0914ac16af92cfd95"
+        ]
+      },
+      "Type": "AWS::RDS::DBSubnetGroup"
+    },
+    "AWSEBEIP": {
+      "Metadata": {
+        "AWS::ElasticBeanstalk::Ext": {
+          "AutoScalingGroup": "AWSEBAutoScalingGroup"
+        },
+        "Description": "Elastic IP Address used as entry point of Single Instance Environment"
+      },
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc"
+      }
+    },
+    "AWSEBBeanstalkMetadata": {
+      "Metadata": {
+        "AWS::ElasticBeanstalk::Ext": {
+          "Parameters": {
+            "AWSEBDBPassword": {
+              "Ref": "AWSEBDBPassword"
+            },
+            "InstanceTypeFamily": {
+              "Ref": "InstanceTypeFamily"
+            },
+            "LogPublicationControl": {
+              "Ref": "LogPublicationControl"
+            },
+            "DocumentRoot": {
+              "Ref": "DocumentRoot"
+            },
+            "InstancePort": {
+              "Ref": "InstancePort"
+            },
+            "HooksPkgUrl": {
+              "Ref": "HooksPkgUrl"
+            },
+            "ZlibOutputCompression": {
+              "Ref": "ZlibOutputCompression"
+            },
+            "AWSEBEnvironmentName": {
+              "Ref": "AWSEBEnvironmentName"
+            },
+            "AWSEBReferrerId": {
+              "Ref": "AWSEBReferrerId"
+            },
+            "EnvironmentVariables": {
+              "Ref": "EnvironmentVariables"
+            },
+            "InstanceType": {
+              "Ref": "InstanceType"
+            },
+            "ProxyStaticFiles": {
+              "Ref": "ProxyStaticFiles"
+            },
+            "XRayEnabled": {
+              "Ref": "XRayEnabled"
+            },
+            "DisplayErrors": {
+              "Ref": "DisplayErrors"
+            },
+            "AWSEBEnvironmentId": {
+              "Ref": "AWSEBEnvironmentId"
+            },
+            "AppSource": {
+              "Ref": "AppSource"
+            },
+            "MaxExecutionTime": {
+              "Ref": "MaxExecutionTime"
+            },
+            "ProxyServer": {
+              "Ref": "ProxyServer"
+            },
+            "MemoryLimit": {
+              "Ref": "MemoryLimit"
+            },
+            "AWSEBDBName": {
+              "Ref": "AWSEBDBName"
+            },
+            "AWSEBDBUser": {
+              "Ref": "AWSEBDBUser"
+            },
+            "AllowUrlFopen": {
+              "Ref": "AllowUrlFopen"
+            },
+            "AWSEBAgentId": {
+              "Ref": "AWSEBAgentId"
+            },
+            "ComposerOptions": {
+              "Ref": "ComposerOptions"
+            },
+            "AWSEBEnvironmentBucket": {
+              "Ref": "AWSEBEnvironmentBucket"
+            }
+          }
+        },
+        "AWS::ElasticBeanstalk::Metadata": {
+          "EnvironmentId": "e-vrbdgzbpzy",
+          "RequestId": "97cafa00-2765-4b14-9095-13187124865e",
+          "Version": "97cafa00-2765-4b14-9095-13187124865e",
+          "EnvironmentName": "WordPressTest-env",
+          "DateUpdated": "2024-10-31T19:24:48",
+          "DateCreated": "2024-10-31T19:24:48",
+          "DeploymentVersion": 2,
+          "DateLastModified": "2024-10-31T19:25:02",
+          "Name": "e-vrbdgzbpzy"
+        }
+      },
+      "Type": "AWS::CloudFormation::WaitConditionHandle",
+      "DependsOn": "AWSEBEIP"
+    }
+  },
+  "Description": "AWS Elastic Beanstalk environment (Name: 'WordPressTest-env'  Id: 'e-vrbdgzbpzy')",
+  "Mappings": {
+    "ContainerMetaARM": {
+      "AMIMeta": {
+        "RepoReleaseVersion": "2023.5",
+        "Owner": "amazon",
+        "AMIVersion": "2023.5.20241001",
+        "AMIName": "al2023-ami-2023.5.20241001.1-kernel-6.1-arm64"
+      }
+    },
+    "AWSEBAWSRegionArch2AMIBase": {
+      "us-east-1": {
+        "pv": "",
+        "graphics": "",
+        "gpu": "",
+        "hvm": "ami-0fff1b9a61dec8a5f"
+      }
+    },
+    "AWSEBOptions": {
+      "options": {
+        "OptionDefinitionOverrideEnabled": true,
+        "platformAssetsUrl": "https://elasticbeanstalk-platform-assets-us-east-1.s3.amazonaws.com/stalks/eb_php83_amazon_linux_2023_1.0.755.0_20241004113311",
+        "CloudConfigOptions": "cloud_final_modules:\n - [scripts-user, always]",
+        "DefaultsScript": "/opt/elasticbeanstalk/config/private/containercommandsupport/container-defaults.sh",
+        "LeaderTestScript": "/opt/elasticbeanstalk/config/private/containercommandsupport/leader-test.sh",
+        "AWSEBHealthdGroupId": "e158aa6c-cce6-419c-afed-6f8dca3f4e88",
+        "HaltStartupCommandsOnFailure": "true",
+        "downloadSourceBundleScriptLocation": [
+          "https://s3.amazonaws.com/elasticbeanstalk-env-resources-us-east-1/eb_patching_resources/download_source_bundle.py"
+        ],
+        "DNSNameResource": "AWSEBEIP",
+        "UserDataScript": "https://elasticbeanstalk-platform-assets-us-east-1.s3.amazonaws.com/stalks/eb_php83_amazon_linux_2023_1.0.755.0_20241004113311/lib/UserDataScript.sh",
+        "DefaultSSHPort": "22",
+        "LaunchType": "Migration",
+        "ProxyServer": "nginx",
+        "FastVersionDeployment": "true",
+        "AWSEBHealthdEndpoint": "https://elasticbeanstalk-health.us-east-1.amazonaws.com",
+        "ServiceRole": "arn:aws:iam::452756163386:role/LabRole",
+        "EnvironmentType": "SingleInstance",
+        "EmbeddedConfigsetsEnabled": "true",
+        "EBSNSTopicArn": "",
+        "HealthdProxyLogLocation": "",
+        "CommandBasedLeaderElection": "true",
+        "nodeploymentOnStartup": "true",
+        "ebpatchscripturl": [
+          "https://s3.amazonaws.com/elasticbeanstalk-env-resources-us-east-1/eb_patching_resources/patch_instance.py"
+        ]
+      }
+    },
+    "AWSEBAWSRegionArch2AMI": {
+      "us-east-1": {
+        "pv": "",
+        "graphics": "",
+        "gpu": "",
+        "hvm": "ami-021566a4a01782c05"
+      }
+    },
+    "EnvironmentInfoTasks": {
+      "systemtail": {
+        "LocationPrefix": "resources/environments/logs/systemtail/",
+        "AutoClean": "true",
+        "CommandName": "CMD-SystemTailLogs"
+      },
+      "tail": {
+        "LocationPrefix": "resources/environments/logs/tail/",
+        "AutoClean": "true",
+        "CommandName": "CMD-TailLogs"
+      },
+      "publish": {
+        "LocationPrefix": "resources/environments/logs/publish/"
+      },
+      "bundle": {
+        "LocationPrefix": "resources/environments/logs/bundle/",
+        "AutoClean": "true",
+        "CommandName": "CMD-BundleLogs"
+      }
+    },
+    "AWSEBAWSRegionArch2AMIBaseARM": {
+      "us-east-1": {
+        "pv": "",
+        "graphics": "",
+        "gpu": "",
+        "hvm": "ami-0621e09dc8263acc3"
+      }
+    },
+    "AWSEBAWSRegionArch2AMIARM": {
+      "us-east-1": {
+        "pv": "",
+        "graphics": "",
+        "gpu": "",
+        "hvm": "ami-00ac620dffbaf8243"
+      }
+    },
+    "ContainerMeta": {
+      "AMIMeta": {
+        "RepoReleaseVersion": "2023.5",
+        "Owner": "amazon",
+        "AMIVersion": "2023.5.20241001",
+        "AMIName": "al2023-ami-2023.5.20241001.1-kernel-6.1-x86_64"
+      }
+    }
+  }
+}

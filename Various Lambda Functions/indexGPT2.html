@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lambda Greeting</title>
+    <script>
+        async function callLambda() {
+            // Get the first and last name from input fields
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+
+            // API Gateway URL (replace with your actual API Gateway endpoint)
+            const apiUrl = 'https://kgbiuit81c.execute-api.us-east-1.amazonaws.com/dev';
+
+            try {
+                // Send a PUT request with the first and last name as JSON
+                const response = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ firstName, lastName })
+                });
+
+                // Parse and display the response message
+                const data = await response.json();
+                document.getElementById('response').textContent = data.message || 'No message returned';
+            } catch (error) {
+                // Handle errors
+                console.error('Error calling the API:', error);
+                document.getElementById('response').textContent = 'Error calling the API. Please try again.';
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Lambda Greeting</h1>
+    <p>Enter your first and last name below:</p>
+    <label for="firstName">First Name:</label>
+    <input type="text" id="firstName" placeholder="First Name">
+    <br>
+    <label for="lastName">Last Name:</label>
+    <input type="text" id="lastName" placeholder="Last Name">
+    <br><br>
+    <button onclick="callLambda()">Submit</button>
+    <p id="response"></p>
+</body>
+</html>

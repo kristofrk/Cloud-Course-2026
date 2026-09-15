@@ -1,0 +1,7 @@
+docker run -it -p 80:80 \
+  --add-host=host.docker.internal:host-gateway \
+  -e WORDPRESS_DB_HOST=host.docker.internal:3306 \
+  -e WORDPRESS_DB_USER=wp-user \
+  -e WORDPRESS_DB_PASSWORD='AWStest2025!' \
+  -e WORDPRESS_DB_NAME=wordpressdb \
+  wordpress

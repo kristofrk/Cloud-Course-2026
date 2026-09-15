@@ -1,0 +1,8 @@
+{
+  "messageAttributes": {
+    "priority": {
+      "stringValue": ["high", "urgent"]
+    }
+  }
+}
+

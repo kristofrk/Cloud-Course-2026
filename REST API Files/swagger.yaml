@@ -1,0 +1,162 @@
+swagger: "2.0"
+
+info:
+  title: Books API
+  description: basic CRUD API
+  version: "1"
+
+basePath: /
+
+
+parameters:
+  isbn:
+    name: isbn
+    in: path
+    description: Name of the book
+    required: true
+    type: string
+  authorName:
+    name: authorName
+    in: query
+    description: Name of the author
+    type: string
+    required: false
+  rating:
+    name: rating
+    in: query
+    description: Book rating
+    type: number
+    required: false
+
+responses:
+  BadRequest:
+    description: Bad Request
+    schema:
+      $ref: "#/definitions/Problem"
+  Created:
+    description: Created
+  NoContent:
+    description: No Content
+  NotFound:
+    description: Not Found
+    schema:
+      $ref: "#/definitions/Problem"
+
+paths:
+
+  /books:
+    get:
+      summary: Get all books
+      operationId: list_books
+      parameters:
+        - $ref: "#/parameters/authorName"
+        - $ref: "#/parameters/rating"
+      responses:
+        200:
+          description: List of books
+        500:
+          description: Unexpected error
+    post:
+      summary: Create a book
+      operationId: post_book
+      parameters:
+        - name: bookRequest
+          in: body
+          description: event payload
+          required: true
+          schema:
+            $ref: "#/definitions/postBookRequest"
+      responses:
+        200:
+          description: response data
+        400:
+          $ref: "#/responses/BadRequest"
+        500:
+          description: Unexpected error
+      
+  /books/{isbn}:
+    get:
+      summary: Get all books
+      operationId: get_book
+      parameters:
+        - $ref: "#/parameters/isbn"
+      responses:
+        200:
+          description: book
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          description: Unexpected error
+    put:
+      summary: Update a book
+      operationId: put_book
+      parameters:
+        - $ref: "#/parameters/isbn"
+        - name: bookRequest
+          in: body
+          description: event payload
+          required: true
+          schema:
+            $ref: "#/definitions/putBookRequest"
+      responses:
+        200:
+          description: response data
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          description: Unexpected error
+    delete:
+      summary: Update a book
+      operationId: delete_book
+      parameters:
+        - $ref: "#/parameters/isbn"
+      responses:
+        204:
+          description: deleted
+        404:
+          $ref: "#/responses/NotFound"
+        500:
+          description: Unexpected error
+
+definitions:
+
+  Problem:
+    type: object
+    properties:
+      error:
+        type: string
+      status:
+        type: number
+    required: ["error", "status"]
+  postBookRequest:
+    additionalProperties: False
+    type: object
+    properties:
+      isbn:
+        type: string
+      bookName:
+        type: string
+      authorName:
+        type: string
+      rating:
+        type: number
+        minimum: 1
+        maximum: 5
+        enum: [1, 2, 3, 4, 5]
+    required:
+    - isbn
+    - bookName
+    - authorName
+    - rating
+  putBookRequest:
+    additionalProperties: False
+    type: object
+    properties:
+      bookName:
+        type: string
+      authorName:
+        type: string
+      rating:
+        type: number
+        minimum: 1
+        maximum: 5

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello World</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 480px;
+      margin: 60px auto;
+      padding: 0 20px;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 24px;
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 16px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 24px;
+      font-size: 1rem;
+      background-color: #0073bb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+    #result {
+      margin-top: 28px;
+      padding: 16px;
+      border-radius: 4px;
+      font-size: 1rem;
+      display: none;
+    }
+    #result.success {
+      background-color: #e6f4ea;
+      border: 1px solid #34a853;
+      color: #1a6630;
+    }
+    #result.error {
+      background-color: #fce8e6;
+      border: 1px solid #d93025;
+      color: #a50e0e;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hello World — Lambda Greeter</h1>
+  <form id="greetForm">
+    <label for="firstName">First Name</label>
+    <input type="text" id="firstName" placeholder="Jane" required>
+
+    <label for="lastName">Last Name</label>
+    <input type="text" id="lastName" placeholder="Doe" required>
+
+    <button type="submit" id="submitBtn">Greet me</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    const API_URL = 'https://ktg2scc3pg.execute-api.us-east-1.amazonaws.com/Prod';
+
+    document.getElementById('greetForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName  = document.getElementById('lastName').value.trim();
+      const submitBtn = document.getElementById('submitBtn');
+      const result    = document.getElementById('result');
+
+      submitBtn.disabled = true;
+      result.style.display = 'none';
+      result.className = '';
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstName, lastName })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const timestamp = new Date().toUTCString();
+        const fullName  = `${firstName} ${lastName}`;
+
+        result.className = 'success';
+        result.textContent = `${fullName} has been greeted by Lambda at ${timestamp}`;
+      } catch (err) {
+        result.className = 'error';
+        result.textContent = `Error: ${err.message}`;
+      } finally {
+        result.style.display = 'block';
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

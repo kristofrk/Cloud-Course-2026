@@ -1,0 +1,53 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Master stack: AWS Event-driven Architectures Workshop"
+
+Resources:
+  CognitoUserPool:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://aws-event-driven-architecture-workshop-assets.s3.amazonaws.com/cognito-user-pool-v2.yaml
+      TimeoutInMinutes: 60
+
+  SNS:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://aws-event-driven-architecture-workshop-assets.s3.amazonaws.com/sns-v2.yaml
+      TimeoutInMinutes: 60
+
+  EventBridge:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://aws-event-driven-architecture-workshop-assets.s3.amazonaws.com/event-bridge-v2.yaml
+      TimeoutInMinutes: 60
+
+  Lambda:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://aws-event-driven-architecture-workshop-assets.s3.amazonaws.com/lambda-v2.yaml
+      TimeoutInMinutes: 60
+
+Outputs:
+  StackRef:
+
+    Value: !Ref CognitoUserPool
+
+  EventGeneratorConfigurationUrl:
+    Description: Event Generator configuration link
+    Value: !GetAtt CognitoUserPool.Outputs.EventGeneratorConfigurationUrl
+
+  WildRydesSaasPlaygroundConfigurationUrl:
+    Description: Wild Rydes Saas Playground configuration link
+    Value: !GetAtt CognitoUserPool.Outputs.WildRydesSaasPlaygroundConfigurationUrl
+
+  CognitoUsername:
+    Description: Cognito username for use with Event Generator and Wild Rydes SaaS Playground
+    Value: !GetAtt CognitoUserPool.Outputs.CognitoUsername
+
+  CognitoPassword:
+    Description: Event Generator password for use with Event Generator and Wild Rydes SaaS Playground
+    Value: !GetAtt CognitoUserPool.Outputs.CognitoPassword
+
+  ApiUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !GetAtt EventBridge.Outputs.ApiUrl
